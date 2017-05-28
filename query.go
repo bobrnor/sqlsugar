@@ -9,12 +9,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-type TableMeta struct {
-	TableName string
-}
-
 type Query struct {
 	query string
+	err   error
 }
 
 type row interface {
@@ -27,45 +24,118 @@ type rows interface {
 	Err() error
 }
 
-const (
-	SelectExprPlaceholder = "@fields"
-
-	UpdateTableExprPlaceholder = "@table"
-	UpdateSetsExprPlaceholder  = "@sets"
-
-	DeleteTableExprPlaceholder = "@table"
-)
-
 var (
-	MetaNotFound = errors.New("Table struct does not contain meta info")
+	NoFromTables = errors.New("Tables not found in `FROM` statement")
+	NoIntoTable  = errors.New("No table in `INSERT INTO` statement")
+	NoSetColumns = errors.New("Columns not  found in `SET` statement")
 )
 
-func SelectQuery(format string, args ...interface{}) (*Query, error) {
-	jointSelectExpr := ""
-
-	for _, i := range args {
-		selectExpr, err := selectExpression(i)
-		if err != nil {
-			return nil, err
+func Select(i interface{}) *Query {
+	selectExpr, err := selectExpression(i)
+	if err != nil {
+		return &Query{
+			err: err,
 		}
-
-		if len(jointSelectExpr) > 0 {
-			jointSelectExpr += ", "
-		}
-		jointSelectExpr += selectExpr
 	}
 
 	return &Query{
-		query: strings.Replace(format, SelectExprPlaceholder, jointSelectExpr, -1),
-	}, nil
+		query: fmt.Sprintf("SELECT %s", selectExpr),
+	}
+}
+
+func (q *Query) From(tables []string) *Query {
+	if q.err != nil {
+		return q
+	}
+
+	if len(tables) == 0 {
+		return &Query{
+			query: "",
+			err:   NoFromTables,
+		}
+	}
+
+	quotedTables := []string{}
+	for _, table := range tables {
+		quotedTables = append(quotedTables, fmt.Sprintf("`%s`", table))
+	}
+
+	return &Query{
+		query: fmt.Sprintf("%s FROM %s", q.query, strings.Join(quotedTables, ", ")),
+	}
+}
+
+func (q *Query) Where(condition string) *Query {
+	if q.err != nil {
+		return q
+	}
+
+	if len(condition) == 0 {
+		return q
+	}
+
+	return &Query{
+		query: fmt.Sprintf("%s WHERE %s", q.query, condition),
+	}
+}
+
+func (q *Query) GroupBy(condition string) *Query {
+	if q.err != nil {
+		return q
+	}
+
+	if len(condition) == 0 {
+		return q
+	}
+
+	return &Query{
+		query: fmt.Sprintf("%s GROUP BY %s", q.query, condition),
+	}
+}
+
+func (q *Query) Having(condition string) *Query {
+	if q.err != nil {
+		return q
+	}
+
+	if len(condition) == 0 {
+		return q
+	}
+
+	return &Query{
+		query: fmt.Sprintf("%s HAVING %s", q.query, condition),
+	}
+}
+
+func (q *Query) OrderBy(condition string) *Query {
+	if q.err != nil {
+		return q
+	}
+
+	if len(condition) == 0 {
+		return q
+	}
+
+	return &Query{
+		query: fmt.Sprintf("%s ORDER BY %s", q.query, condition),
+	}
+}
+
+func (q *Query) Limit(condition string) *Query {
+	if q.err != nil {
+		return q
+	}
+
+	if len(condition) == 0 {
+		return q
+	}
+
+	return &Query{
+		query: fmt.Sprintf("%s LIMIT %s", q.query, condition),
+	}
 }
 
 func selectExpression(i interface{}) (string, error) {
-	meta, err := fetchMeta(i)
-	if err != nil {
-		return "", err
-	}
-
 	reflectedType := reflect.TypeOf(i).Elem()
 
 	selectExpr := ""
@@ -77,7 +147,7 @@ func selectExpression(i interface{}) (string, error) {
 			continue
 		}
 
-		quotedColumn := fmt.Sprintf("`%s`.`%s`", meta.TableName, column)
+		quotedColumn := fmt.Sprintf("`%s`", column)
 		if len(selectExpr) > 0 {
 			selectExpr += ", "
 		}
@@ -87,12 +157,7 @@ func selectExpression(i interface{}) (string, error) {
 	return selectExpr, nil
 }
 
-func InsertQuery(i interface{}) (*Query, error) {
-	meta, err := fetchMeta(i)
-	if err != nil {
-		return nil, err
-	}
-
+func Insert(i interface{}) *Query {
 	reflectedType := reflect.TypeOf(i).Elem()
 
 	columns := []string{}
@@ -113,27 +178,47 @@ func InsertQuery(i interface{}) (*Query, error) {
 	columnsExpr := strings.Join(columns, ", ")
 	valuesExpr := strings.Join(values, ", ")
 	return &Query{
-		query: fmt.Sprintf("INSERT INTO `%s` (%s) VALUES (%s)", meta.TableName, columnsExpr, valuesExpr),
-	}, nil
+		query: fmt.Sprintf("(%s) VALUES (%s)", columnsExpr, valuesExpr),
+	}
 }
 
-func UpdateQuery(format string, fields []string, i interface{}) (*Query, error) {
-	meta, err := fetchMeta(i)
-	if err != nil {
-		return nil, err
+func (q *Query) Into(table string) *Query {
+	if q.err != nil {
+		return q
 	}
 
-	reflectedType := reflect.TypeOf(i).Elem()
+	if len(table) == 0 {
+		return &Query{
+			query: "",
+			err:   NoIntoTable,
+		}
+	}
+
+	return &Query{
+		query: fmt.Sprintf("INSERT INTO `%s` %s", table, q.query),
+	}
+}
+
+func Update(table string) *Query {
+	return &Query{
+		query: fmt.Sprintf("UPDATE `%s`", table),
+	}
+}
+
+func (q *Query) Set(columns []string) *Query {
+	if q.err != nil {
+		return q
+	}
+
+	if len(columns) == 0 {
+		return &Query{
+			query: "",
+			err:   NoSetColumns,
+		}
+	}
 
 	setsExpr := ""
-	for i := 0; i < reflectedType.NumField(); i++ {
-		field := reflectedType.Field(i)
-
-		column := field.Tag.Get("column")
-		if !contains(fields, column) {
-			continue
-		}
-
+	for _, column := range columns {
 		if len(setsExpr) > 0 {
 			setsExpr += ", "
 		}
@@ -141,35 +226,15 @@ func UpdateQuery(format string, fields []string, i interface{}) (*Query, error) 
 		setsExpr += fmt.Sprintf("`%s` = ?", column)
 	}
 
-	quotedTableName := fmt.Sprintf("`%s`", meta.TableName)
-	update := strings.Replace(format, UpdateTableExprPlaceholder, quotedTableName, -1)
-	update = strings.Replace(update, UpdateSetsExprPlaceholder, setsExpr, -1)
 	return &Query{
-		query: update,
-	}, nil
+		query: fmt.Sprintf("%s SET %s", q.query, setsExpr),
+	}
 }
 
-func DeleteQuery(format string, i interface{}) (*Query, error) {
-	meta, err := fetchMeta(i)
-	if err != nil {
-		return nil, err
-	}
-
-	quotedTableName := fmt.Sprintf("`%s`", meta.TableName)
+func Delete(table string) *Query {
 	return &Query{
-		query: strings.Replace(format, DeleteTableExprPlaceholder, quotedTableName, -1),
-	}, nil
-}
-
-func fetchMeta(i interface{}) (TableMeta, error) {
-	value := reflect.ValueOf(i).Elem()
-	metaValue := value.FieldByName("TableMeta").Interface()
-	meta, ok := metaValue.(TableMeta)
-	if !ok {
-		return TableMeta{}, errors.WithStack(MetaNotFound)
+		query: fmt.Sprintf("DELETE FROM `%s`", table),
 	}
-
-	return meta, nil
 }
 
 func contains(slice []string, item string) bool {
@@ -265,4 +330,8 @@ func scan(r row, rowType reflect.Type) (reflect.Value, error) {
 	}
 	err := r.Scan(fields...)
 	return rowValue, err
+}
+
+func (q *Query) Error() error {
+	return q.err
 }
