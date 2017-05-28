@@ -1,4 +1,4 @@
-package sorm
+package sqlsugar
 
 import (
 	"database/sql"
