@@ -52,6 +52,28 @@ func (q *UpdateQuery) Set(columns []string) *UpdateQuery {
 	}
 }
 
+func (q *UpdateQuery) SetAll(i interface{}) *UpdateQuery {
+	if q.err != nil {
+		return q
+	}
+
+	columns := []string{}
+
+	reflectedType := reflect.TypeOf(i).Elem()
+	for i := 0; i < reflectedType.NumField(); i++ {
+		fieldType := reflectedType.Field(i)
+
+		column := fieldType.Tag.Get("column")
+		if len(column) == 0 || column == "id" {
+			continue
+		}
+
+		columns = append(columns, column)
+	}
+
+	return q.Set(columns)
+}
+
 func (q *UpdateQuery) Where(condition string) *UpdateQuery {
 	if q.err != nil {
 		return q
