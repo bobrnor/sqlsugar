@@ -54,17 +54,13 @@ func (q *InsertQuery) Into(table string) *InsertQuery {
 	}
 
 	if len(table) == 0 {
-		return &InsertQuery{
-			query: "",
-			err:   errors.WithStack(NoTable),
-		}
+		q.err = errors.WithStack(NoTable)
+		return q
 	}
 
 	q.tableSet = true
-
-	return &InsertQuery{
-		query: fmt.Sprintf("INSERT INTO `%s` %s", table, q.query),
-	}
+	q.query = fmt.Sprintf("INSERT INTO `%s` %s", table, q.query)
+	return q
 }
 
 func (q *InsertQuery) Exec(tx *sql.Tx, i interface{}) (sql.Result, error) {

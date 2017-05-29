@@ -7,7 +7,9 @@ import (
 
 func TestInsertQuery0(t *testing.T) {
 	expected := &InsertQuery{
-		query: "INSERT INTO `EmptyTable` () VALUES ()",
+		query:    "INSERT INTO `EmptyTable` () VALUES ()",
+		tableSet: true,
+		t:        reflect.TypeOf((*EmptyTable)(nil)).Elem(),
 	}
 	found := Insert((*EmptyTable)(nil)).Into("EmptyTable")
 
@@ -18,7 +20,9 @@ func TestInsertQuery0(t *testing.T) {
 
 func TestInsertQuery1(t *testing.T) {
 	expected := &InsertQuery{
-		query: "INSERT INTO `SimpleTable` (`field0`, `field1`) VALUES (?, ?)",
+		query:    "INSERT INTO `SimpleTable` (`field0`, `field1`) VALUES (?, ?)",
+		tableSet: true,
+		t:        reflect.TypeOf((*SimpleTable)(nil)).Elem(),
 	}
 	found := Insert((*SimpleTable)(nil)).Into("SimpleTable")
 

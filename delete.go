@@ -41,9 +41,8 @@ func (q *DeleteQuery) OrderBy(condition string) *DeleteQuery {
 		return q
 	}
 
-	return &DeleteQuery{
-		query: fmt.Sprintf("%s ORDER BY %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s ORDER BY %s", q.query, condition)
+	return q
 }
 
 func (q *DeleteQuery) Limit(condition string) *DeleteQuery {
@@ -55,9 +54,8 @@ func (q *DeleteQuery) Limit(condition string) *DeleteQuery {
 		return q
 	}
 
-	return &DeleteQuery{
-		query: fmt.Sprintf("%s LIMIT %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s LIMIT %s", q.query, condition)
+	return q
 }
 
 func (q *DeleteQuery) Exec(tx *sql.Tx, args []interface{}) (sql.Result, error) {

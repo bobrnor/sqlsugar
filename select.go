@@ -46,10 +46,8 @@ func (q *SelectQuery) From(tables []string) *SelectQuery {
 	}
 
 	if len(tables) == 0 {
-		return &SelectQuery{
-			query: "",
-			err:   errors.WithStack(NoTablesUsed),
-		}
+		q.err = errors.WithStack(NoTablesUsed)
+		return q
 	}
 
 	quotedTables := []string{}
@@ -58,10 +56,8 @@ func (q *SelectQuery) From(tables []string) *SelectQuery {
 	}
 
 	q.tableSet = true
-
-	return &SelectQuery{
-		query: fmt.Sprintf("%s FROM %s", q.query, strings.Join(quotedTables, ", ")),
-	}
+	q.query = fmt.Sprintf("%s FROM %s", q.query, strings.Join(quotedTables, ", "))
+	return q
 }
 
 func (q *SelectQuery) Where(condition string) *SelectQuery {
@@ -73,9 +69,8 @@ func (q *SelectQuery) Where(condition string) *SelectQuery {
 		return q
 	}
 
-	return &SelectQuery{
-		query: fmt.Sprintf("%s WHERE %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s WHERE %s", q.query, condition)
+	return q
 }
 
 func (q *SelectQuery) GroupBy(condition string) *SelectQuery {
@@ -87,9 +82,8 @@ func (q *SelectQuery) GroupBy(condition string) *SelectQuery {
 		return q
 	}
 
-	return &SelectQuery{
-		query: fmt.Sprintf("%s GROUP BY %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s GROUP BY %s", q.query, condition)
+	return q
 }
 
 func (q *SelectQuery) Having(condition string) *SelectQuery {
@@ -101,9 +95,8 @@ func (q *SelectQuery) Having(condition string) *SelectQuery {
 		return q
 	}
 
-	return &SelectQuery{
-		query: fmt.Sprintf("%s HAVING %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s HAVING %s", q.query, condition)
+	return q
 }
 
 func (q *SelectQuery) OrderBy(condition string) *SelectQuery {
@@ -115,9 +108,8 @@ func (q *SelectQuery) OrderBy(condition string) *SelectQuery {
 		return q
 	}
 
-	return &SelectQuery{
-		query: fmt.Sprintf("%s ORDER BY %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s ORDER BY %s", q.query, condition)
+	return q
 }
 
 func (q *SelectQuery) Limit(condition string) *SelectQuery {
@@ -129,9 +121,8 @@ func (q *SelectQuery) Limit(condition string) *SelectQuery {
 		return q
 	}
 
-	return &SelectQuery{
-		query: fmt.Sprintf("%s LIMIT %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s LIMIT %s", q.query, condition)
+	return q
 }
 
 func selectExpression(i interface{}) string {

@@ -30,10 +30,8 @@ func (q *UpdateQuery) Set(columns []string) *UpdateQuery {
 	}
 
 	if len(columns) == 0 {
-		return &UpdateQuery{
-			query: "",
-			err:   errors.WithStack(NoSet),
-		}
+		q.err = errors.WithStack(NoSet)
+		return q
 	}
 
 	setsExpr := ""
@@ -46,10 +44,8 @@ func (q *UpdateQuery) Set(columns []string) *UpdateQuery {
 	}
 
 	q.setColumns = columns
-
-	return &UpdateQuery{
-		query: fmt.Sprintf("%s SET %s", q.query, setsExpr),
-	}
+	q.query = fmt.Sprintf("%s SET %s", q.query, setsExpr)
+	return q
 }
 
 func (q *UpdateQuery) SetAll(i interface{}) *UpdateQuery {
@@ -83,9 +79,8 @@ func (q *UpdateQuery) Where(condition string) *UpdateQuery {
 		return q
 	}
 
-	return &UpdateQuery{
-		query: fmt.Sprintf("%s WHERE %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s WHERE %s", q.query, condition)
+	return q
 }
 
 func (q *UpdateQuery) OrderBy(condition string) *UpdateQuery {
@@ -97,9 +92,8 @@ func (q *UpdateQuery) OrderBy(condition string) *UpdateQuery {
 		return q
 	}
 
-	return &UpdateQuery{
-		query: fmt.Sprintf("%s ORDER BY %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s ORDER BY %s", q.query, condition)
+	return q
 }
 
 func (q *UpdateQuery) Limit(condition string) *UpdateQuery {
@@ -111,9 +105,8 @@ func (q *UpdateQuery) Limit(condition string) *UpdateQuery {
 		return q
 	}
 
-	return &UpdateQuery{
-		query: fmt.Sprintf("%s LIMIT %s", q.query, condition),
-	}
+	q.query = fmt.Sprintf("%s LIMIT %s", q.query, condition)
+	return q
 }
 
 func (q *UpdateQuery) Exec(tx *sql.Tx, i interface{}, args ...interface{}) (sql.Result, error) {

@@ -20,7 +20,8 @@ func TestUpdateQuery0(t *testing.T) {
 
 func TestUpdateQuery1(t *testing.T) {
 	expected := &UpdateQuery{
-		query: "UPDATE `SimpleTable` SET `id` = ?, `field0` = ?, `field1` = ?",
+		query:      "UPDATE `SimpleTable` SET `id` = ?, `field0` = ?, `field1` = ?",
+		setColumns: []string{"id", "field0", "field1"},
 	}
 	found := Update("SimpleTable").Set([]string{"id", "field0", "field1"})
 
@@ -31,7 +32,8 @@ func TestUpdateQuery1(t *testing.T) {
 
 func TestUpdateQuery2(t *testing.T) {
 	expected := &UpdateQuery{
-		query: "UPDATE `SimpleTable` SET `field0` = ?",
+		query:      "UPDATE `SimpleTable` SET `field0` = ?",
+		setColumns: []string{"field0"},
 	}
 	found := Update("SimpleTable").Set([]string{"field0"})
 

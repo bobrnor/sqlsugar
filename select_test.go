@@ -16,7 +16,9 @@ type SimpleTable struct {
 
 func TestSelectQuery0(t *testing.T) {
 	expected := &SelectQuery{
-		query: "SELECT  FROM `EmptyTable`",
+		query:    "SELECT  FROM `EmptyTable`",
+		t:        reflect.TypeOf((*EmptyTable)(nil)).Elem(),
+		tableSet: true,
 	}
 	found := Select((*EmptyTable)(nil)).From([]string{"EmptyTable"})
 
@@ -27,7 +29,9 @@ func TestSelectQuery0(t *testing.T) {
 
 func TestSelectQuery1(t *testing.T) {
 	expected := &SelectQuery{
-		query: "SELECT `id`, `field0`, `field1` FROM `SimpleTable`",
+		query:    "SELECT `id`, `field0`, `field1` FROM `SimpleTable`",
+		t:        reflect.TypeOf((*SimpleTable)(nil)).Elem(),
+		tableSet: true,
 	}
 	found := Select((*SimpleTable)(nil)).From([]string{"SimpleTable"})
 
