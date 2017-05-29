@@ -156,3 +156,7 @@ func index(slice []string, item string) int {
 	}
 	return -1
 }
+
+func (q *UpdateQuery) Error() error {
+	return q.err
+}

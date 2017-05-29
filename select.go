@@ -231,3 +231,7 @@ func (q *SelectQuery) scan(r row) (reflect.Value, error) {
 	err := r.Scan(fields...)
 	return rowValue, err
 }
+
+func (q *SelectQuery) Error() error {
+	return q.err
+}

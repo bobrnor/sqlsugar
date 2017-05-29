@@ -94,3 +94,7 @@ func (q *InsertQuery) Exec(tx *sql.Tx, i interface{}) (sql.Result, error) {
 	}
 	return result, err
 }
+
+func (q *InsertQuery) Error() error {
+	return q.err
+}

@@ -67,3 +67,7 @@ func (q *DeleteQuery) Exec(tx *sql.Tx, args []interface{}) (sql.Result, error) {
 	}
 	return result, err
 }
+
+func (q *DeleteQuery) Error() error {
+	return q.err
+}
