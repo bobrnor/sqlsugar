@@ -15,7 +15,7 @@ type SimpleTable struct {
 }
 
 func TestSelectQuery0(t *testing.T) {
-	expected := &Query{
+	expected := &SelectQuery{
 		query: "SELECT  FROM `EmptyTable`",
 	}
 	found := Select((*EmptyTable)(nil)).From([]string{"EmptyTable"})
@@ -26,7 +26,7 @@ func TestSelectQuery0(t *testing.T) {
 }
 
 func TestSelectQuery1(t *testing.T) {
-	expected := &Query{
+	expected := &SelectQuery{
 		query: "SELECT `id`, `field0`, `field1` FROM `SimpleTable`",
 	}
 	found := Select((*SimpleTable)(nil)).From([]string{"SimpleTable"})
@@ -53,7 +53,7 @@ func TestSelectQuery1(t *testing.T) {
 // 		"test field N2",
 // 		6.626,
 // 	}
-// 	expected := &Query{
+// 	expected := &query{
 // 		query: "SELECT `SimpleTable1`.`id`, `SimpleTable1`.`field0`, `SimpleTable1`.`field1`, `SimpleTable2`.`id`, `SimpleTable2`.`field0`, `SimpleTable2`.`field1` FROM `SimpleTable1`, `SimpleTable2`",
 // 	}
 // 	found, err := SelectQuery("SELECT @fields FROM `SimpleTable1`, `SimpleTable2`", &table1, &table2)
@@ -69,11 +69,7 @@ func TestSelectQuery1(t *testing.T) {
 
 func TestSelectExpression0(t *testing.T) {
 	expected := ""
-	found, err := selectExpression((*EmptyTable)(nil))
-
-	if err != nil {
-		t.Error(err)
-	}
+	found := selectExpression((*EmptyTable)(nil))
 
 	if expected != found {
 		t.Errorf("Expected: %+v, found %+v", expected, found)
@@ -82,79 +78,9 @@ func TestSelectExpression0(t *testing.T) {
 
 func TestSelectExpression1(t *testing.T) {
 	expected := "`id`, `field0`, `field1`"
-	found, err := selectExpression((*SimpleTable)(nil))
-
-	if err != nil {
-		t.Error(err)
-	}
+	found := selectExpression((*SimpleTable)(nil))
 
 	if expected != found {
-		t.Errorf("Expected: %+v, found %+v", expected, found)
-	}
-}
-
-func TestInsertQuery0(t *testing.T) {
-	expected := &Query{
-		query: "INSERT INTO `EmptyTable` () VALUES ()",
-	}
-	found := Insert((*EmptyTable)(nil)).Into("EmptyTable")
-
-	if !reflect.DeepEqual(expected, found) {
-		t.Errorf("Expected: %+v, found %+v", expected, found)
-	}
-}
-
-func TestInsertQuery1(t *testing.T) {
-	expected := &Query{
-		query: "INSERT INTO `SimpleTable` (`field0`, `field1`) VALUES (?, ?)",
-	}
-	found := Insert((*SimpleTable)(nil)).Into("SimpleTable")
-
-	if !reflect.DeepEqual(expected, found) {
-		t.Errorf("Expected: %+v, found %+v", expected, found)
-	}
-}
-
-func TestUpdateQuery0(t *testing.T) {
-	expected := &Query{
-		err: NoSetColumns,
-	}
-	found := Update("EmptyTable").Set([]string{})
-
-	if !reflect.DeepEqual(expected, found) {
-		t.Errorf("Expected: %+v, found %+v", expected, found)
-	}
-}
-
-func TestUpdateQuery1(t *testing.T) {
-	expected := &Query{
-		query: "UPDATE `SimpleTable` SET `id` = ?, `field0` = ?, `field1` = ?",
-	}
-	found := Update("SimpleTable").Set([]string{"id", "field0", "field1"})
-
-	if !reflect.DeepEqual(expected, found) {
-		t.Errorf("Expected: %+v, found %+v", expected, found)
-	}
-}
-
-func TestUpdateQuery2(t *testing.T) {
-	expected := &Query{
-		query: "UPDATE `SimpleTable` SET `field0` = ?",
-	}
-	found := Update("SimpleTable").Set([]string{"field0"})
-
-	if !reflect.DeepEqual(expected, found) {
-		t.Errorf("Expected: %+v, found %+v", expected, found)
-	}
-}
-
-func TestDeleteQuery0(t *testing.T) {
-	expected := &Query{
-		query: "DELETE FROM `EmptyTable`",
-	}
-	found := Delete("EmptyTable")
-
-	if !reflect.DeepEqual(expected, found) {
 		t.Errorf("Expected: %+v, found %+v", expected, found)
 	}
 }
@@ -194,10 +120,11 @@ func TestScan0(t *testing.T) {
 		Field0: "TEST_CLIENT_ID",
 		Field1: float64(67.223),
 	}
-	found := SimpleTable{}
-	foundType := reflect.TypeOf(found)
-	foundValue, err := scan(&r, foundType)
-	found = foundValue.Interface().(SimpleTable)
+	q := SelectQuery{
+		t: reflect.TypeOf((*SimpleTable)(nil)).Elem(),
+	}
+	foundValue, err := q.scan(&r)
+	found := foundValue.Interface().(SimpleTable)
 	if !reflect.DeepEqual(expected, found) {
 		t.Errorf("%+v %+v", found, err)
 	}
@@ -215,10 +142,11 @@ func TestIterate0(t *testing.T) {
 			Field1: float64(67.223),
 		},
 	}
-	found := []SimpleTable{}
-	foundType := reflect.TypeOf(found)
-	foundValue, err := iterate(&r, foundType)
-	found = foundValue.Interface().([]SimpleTable)
+	q := SelectQuery{
+		t: reflect.TypeOf((*SimpleTable)(nil)).Elem(),
+	}
+	foundValue, err := q.iterate(&r)
+	found := foundValue.Interface().([]SimpleTable)
 	if !reflect.DeepEqual(expected, found) {
 		t.Errorf("%+v %+v", found, err)
 	}
