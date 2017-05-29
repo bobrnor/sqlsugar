@@ -1,0 +1,30 @@
+stages:
+  - install-environment
+  - test
+
+install-go:
+  stage: install-environment
+  script:
+    - export CURRENT_BUILD_PATH=$(pwd)
+    - echo $PATH
+    - rm -rf $HOME/golang
+    - rm -rf $HOME/gopath
+    - mkdir -p $HOME/golang # for GOROOT (contains the Go binary & core packages)
+    - mkdir -p $HOME/gopath # for GOPATH (contains code and external packages)
+    - apt-get install golang-go
+    - export GOROOT=$HOME/golang/go
+    - export GOPATH=$HOME/gopath
+    - export PATH=$PATH:$GOROOT/bin
+    - export PATH=$PATH:$GOPATH/bin
+    - echo "✓ Go binary installed!"
+    - go version
+    - echo $PATH
+    - go env
+    - which go
+
+test-my-project:
+  stage: test
+  script:
+    - cd $CURRENT_BUILD_PATH
+    - go get ...
+    - go test
