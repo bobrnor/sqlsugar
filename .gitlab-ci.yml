@@ -13,7 +13,6 @@ install-go:
     - mkdir -p $HOME/gopath # for GOPATH (contains code and external packages)
     - apt-get update
     - apt-get install -y golang-go
-    - export GOROOT=$HOME/golang/go
     - export GOPATH=$HOME/gopath
     - export PATH=$PATH:$GOROOT/bin
     - export PATH=$PATH:$GOPATH/bin
