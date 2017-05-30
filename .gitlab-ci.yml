@@ -16,6 +16,5 @@ test:
   script:
     - cp $CURRENT_BUILD_PATH/* $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git/
     - cd $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
-    - ls -l
     - go get ...
-    - go test
+    - go test ...
