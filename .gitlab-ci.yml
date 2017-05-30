@@ -1,4 +1,4 @@
-images: golang
+image: golang
 
 before_script:
   - export CURRENT_BUILD_PATH=$(pwd)
