@@ -1,32 +1,25 @@
-stages:
-  - install-environment
-  - test
+before_script:
+  - export CURRENT_BUILD_PATH=$(pwd)
+  - echo $PATH
+  - rm -rf $HOME/golang
+  - rm -rf $HOME/gopath
+  - mkdir -p $HOME/golang
+  - mkdir -p $HOME/gopath
+  - apt-get update
+  - apt-get install -y curl
+  - curl -O https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz
+  - tar -C $HOME/golang -xzf go1.8.3.linux-amd64.tar.gz
+  - export GOROOT=$HOME/golang/go
+  - export GOPATH=$HOME/gopath
+  - export PATH=$PATH:$GOROOT/bin
+  - export PATH=$PATH:$GOPATH/bin
+  - echo "✓ Go binary installed!"
+  - go version
+  - echo $PATH
+  - go env
+  - which go
 
-install-go:
-  stage: install-environment
-  script:
-    - export CURRENT_BUILD_PATH=$(pwd)
-    - echo $PATH
-    - rm -rf $HOME/golang
-    - rm -rf $HOME/gopath
-    - mkdir -p $HOME/golang
-    - mkdir -p $HOME/gopath
-    - apt-get update
-    - apt-get install -y curl
-    - curl -O https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz
-    - tar -C $HOME/golang -xzf go1.8.3.linux-amd64.tar.gz
-    - export GOROOT=$HOME/golang/go
-    - export GOPATH=$HOME/gopath
-    - export PATH=$PATH:$GOROOT/bin
-    - export PATH=$PATH:$GOPATH/bin
-    - echo "✓ Go binary installed!"
-    - go version
-    - echo $PATH
-    - go env
-    - which go
-
-test-my-project:
-  stage: test
+test:
   script:
     - cd $CURRENT_BUILD_PATH
     - go get ...
