@@ -1,7 +1,7 @@
 image: golang
 
 before_script:
-  - export CURRENT_BUILD_PATH=$(pwd)/
+  - export CURRENT_BUILD_PATH=$(pwd)
   - echo $PATH
   - rm -rf $HOME/gopath
   - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
@@ -15,8 +15,8 @@ before_script:
 test:
   script:
     - echo $CURRENT_BUILD_PATH
-    - cp -R $CURRENT_BUILD_PATH $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git/
-    - cd $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git/
+    - ln -s $CURRENT_BUILD_PATH $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
+    - cd $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
     - ls -l
     - go get ...
     - go test
