@@ -11,6 +11,7 @@ install-go:
     - rm -rf $HOME/gopath
     - mkdir -p $HOME/golang # for GOROOT (contains the Go binary & core packages)
     - mkdir -p $HOME/gopath # for GOPATH (contains code and external packages)
+    - apt-get update
     - apt-get install golang-go
     - export GOROOT=$HOME/golang/go
     - export GOPATH=$HOME/gopath
