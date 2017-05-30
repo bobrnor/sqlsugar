@@ -2,15 +2,10 @@ image: golang
 
 before_script:
   - export CURRENT_BUILD_PATH=$(pwd)
-  - echo $PATH
   - rm -rf $HOME/gopath
   - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
   - export GOPATH=$HOME/gopath
   - export PATH=$PATH:$GOPATH/bin
-  - go version
-  - echo $PATH
-  - go env
-  - which go
 
 test:
   script:
@@ -18,3 +13,4 @@ test:
     - cd $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
     - go get ...
     - go test ./...
+    - if ! [ $? -eq 0 ];then echo $PATH && go version && go env && which go fi
