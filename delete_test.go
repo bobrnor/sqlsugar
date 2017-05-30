@@ -14,4 +14,5 @@ func TestDeleteQuery0(t *testing.T) {
 	if !reflect.DeepEqual(expected, found) {
 		t.Errorf("Expected: %+v, found %+v", expected, found)
 	}
+	t.Errorf("Expected: %+v, found %+v", expected, found)
 }
