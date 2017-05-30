@@ -12,7 +12,7 @@ install-go:
     - mkdir -p $HOME/golang
     - mkdir -p $HOME/gopath
     - apt-get update
-    - apt-get unstall -y curl
+    - apt-get install -y curl
     - curl -O https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz
     - tar -C $HOME/golang -xzf go1.8.3.linux-amd64.tar.gz
     - export GOROOT=$HOME/golang/go
