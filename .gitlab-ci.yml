@@ -6,6 +6,10 @@ before_script:
   - mkdir -p $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
   - export GOPATH=$HOME/gopath
   - export PATH=$PATH:$GOPATH/bin
+  - echo $PATH
+  - go version
+  - go env
+  - which go
 
 test:
   script:
@@ -13,4 +17,3 @@ test:
     - cd $HOME/gopath/src/git.nulana.com/bobrnor/sqlsugar.git
     - go get ...
     - go test ./...
-    - if ! [ $? -eq 0 ]; then echo $PATH; go version; go env; which go; fi
