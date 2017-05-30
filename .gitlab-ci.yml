@@ -11,8 +11,9 @@ install-go:
     - rm -rf $HOME/gopath
     - mkdir -p $HOME/golang # for GOROOT (contains the Go binary & core packages)
     - mkdir -p $HOME/gopath # for GOPATH (contains code and external packages)
-    - apt-get update
-    - apt-get install -y golang-go
+    - curl https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz 2>/dev/null > go.tar.gz
+    - tar -C $HOME/golang -xzf go.tar.gz
+    - export GOROOT=$HOME/golang/go
     - export GOPATH=$HOME/gopath
     - export PATH=$PATH:$GOROOT/bin
     - export PATH=$PATH:$GOPATH/bin
