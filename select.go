@@ -175,10 +175,14 @@ func (q *SelectQuery) QueryRow(tx *sql.Tx, args ...interface{}) (interface{}, er
 
 	result, err := q.scan(row)
 	if err != nil {
-		return nil, err
+		if errors.Cause(err) != sql.ErrNoRows {
+			return nil, err
+		} else {
+			return nil, nil
+		}
 	}
 
-	return result.Interface(), nil
+	return result.Addr().Interface(), nil
 }
 
 func (q *SelectQuery) iterate(r rows) (reflect.Value, error) {
@@ -220,7 +224,7 @@ func (q *SelectQuery) scan(r row) (reflect.Value, error) {
 		fields = append(fields, ptr)
 	}
 	err := r.Scan(fields...)
-	return rowValue, err
+	return rowValue, errors.WithStack(err)
 }
 
 func (q *SelectQuery) Error() error {
