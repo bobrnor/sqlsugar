@@ -58,7 +58,7 @@ func (q *DeleteQuery) Limit(condition string) *DeleteQuery {
 	return q
 }
 
-func (q *DeleteQuery) Exec(tx *sql.Tx, args []interface{}) (sql.Result, error) {
+func (q *DeleteQuery) Exec(tx *sql.Tx, args ...interface{}) (sql.Result, error) {
 	result, err := database.Exec(q.query, args...)
 	if err != nil {
 		err = errors.WithStack(err)

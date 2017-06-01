@@ -125,6 +125,15 @@ func (q *SelectQuery) Limit(condition string) *SelectQuery {
 	return q
 }
 
+func (q *SelectQuery) ForUpdate() *SelectQuery {
+	if q.err != nil {
+		return q
+	}
+
+	q.query = fmt.Sprintf("%s FOR UPDATE", q.query)
+	return q
+}
+
 func selectExpression(i interface{}) string {
 	reflectedType := reflect.TypeOf(i).Elem()
 

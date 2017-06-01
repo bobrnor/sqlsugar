@@ -25,7 +25,8 @@ func Open(driverName, dataSourceName string) error {
 
 func Close() error {
 	if database != nil {
-		return database.Close()
+		err := database.Close()
+		return errors.Wrap(err, "Can't close database")
 	}
 	return nil
 }
@@ -46,6 +47,11 @@ func SetConnMaxLifetime(d time.Duration) {
 	if database != nil {
 		database.SetConnMaxLifetime(d)
 	}
+}
+
+func Begin() (*sql.Tx, error) {
+	tx, err := database.Begin()
+	return tx, errors.WithStack(err)
 }
 
 func RollbackOnRecover(tx *sql.Tx, fn TxRollbackFunc) {
