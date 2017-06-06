@@ -114,7 +114,7 @@ func (q *UpdateQuery) Exec(tx *sql.Tx, i interface{}, args ...interface{}) (sql.
 		return nil, errors.WithStack(NoSet)
 	}
 
-	fields := make([]interface{}, len(q.setColumns), 0)
+	fields := make([]interface{}, len(q.setColumns), len(q.setColumns))
 
 	reflectedType := reflect.TypeOf(i).Elem()
 	reflectedValue := reflect.ValueOf(i).Elem()
