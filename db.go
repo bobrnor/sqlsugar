@@ -4,10 +4,21 @@ import (
 	"database/sql"
 	"time"
 
+	"context"
+
 	"github.com/pkg/errors"
 )
 
 type TxRollbackFunc func(err error)
+
+type executor interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+}
 
 var (
 	database *sql.DB
@@ -57,8 +68,15 @@ func Begin() (*sql.Tx, error) {
 func RollbackOnRecover(tx *sql.Tx, fn TxRollbackFunc) {
 	if err := recover(); err != nil {
 		rollBackErr := tx.Rollback()
-		if rollBackErr == nil && err.(error) != nil && fn != nil {
-			fn(errors.WithStack(err.(error)))
+		if rollBackErr == nil && fn != nil {
+			fn(errors.Errorf("%+v", err))
 		}
 	}
+}
+
+func fetchExecutor(tx *sql.Tx) executor {
+	if tx == nil {
+		return database
+	}
+	return tx
 }

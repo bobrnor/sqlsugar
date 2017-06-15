@@ -40,36 +40,18 @@ func TestSelectQuery1(t *testing.T) {
 	}
 }
 
-// func TestSelectQuery2(t *testing.T) {
-// 	table1 := SimpleTable{
-// 		TableMeta{
-// 			TableName: "SimpleTable1",
-// 		},
-// 		127,
-// 		"test field",
-// 		3.14,
-// 	}
-// 	table2 := SimpleTable{
-// 		TableMeta{
-// 			TableName: "SimpleTable2",
-// 		},
-// 		512,
-// 		"test field N2",
-// 		6.626,
-// 	}
-// 	expected := &query{
-// 		query: "SELECT `SimpleTable1`.`id`, `SimpleTable1`.`field0`, `SimpleTable1`.`field1`, `SimpleTable2`.`id`, `SimpleTable2`.`field0`, `SimpleTable2`.`field1` FROM `SimpleTable1`, `SimpleTable2`",
-// 	}
-// 	found, err := SelectQuery("SELECT @fields FROM `SimpleTable1`, `SimpleTable2`", &table1, &table2)
+func TestSelectQuery2(t *testing.T) {
+	expected := &SelectQuery{
+		query:    "SELECT `id`, `field0`, `field1` FROM `SimpleTable0`, `SimpleTable1`",
+		t:        reflect.TypeOf((*SimpleTable)(nil)).Elem(),
+		tableSet: true,
+	}
+	found := Select((*SimpleTable)(nil)).From([]string{"SimpleTable0", "SimpleTable1"})
 
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-
-// 	if !reflect.DeepEqual(expected, found) {
-// 		t.Errorf("Expected: %+v, found %+v", expected, found)
-// 	}
-// }
+	if !reflect.DeepEqual(expected, found) {
+		t.Errorf("Expected: %+v, found %+v", expected, found)
+	}
+}
 
 func TestSelectExpression0(t *testing.T) {
 	expected := ""

@@ -161,7 +161,8 @@ func (q *SelectQuery) Query(tx *sql.Tx, args ...interface{}) (interface{}, error
 		return nil, errors.WithStack(NoTablesUsed)
 	}
 
-	rows, err := database.Query(q.query, args...)
+	ex := fetchExecutor(tx)
+	rows, err := ex.Query(q.query, args...)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -180,7 +181,8 @@ func (q *SelectQuery) QueryRow(tx *sql.Tx, args ...interface{}) (interface{}, er
 		return nil, errors.WithStack(NoTablesUsed)
 	}
 
-	row := database.QueryRow(q.query, args...)
+	ex := fetchExecutor(tx)
+	row := ex.QueryRow(q.query, args...)
 
 	result, err := q.scan(row)
 	if err != nil {

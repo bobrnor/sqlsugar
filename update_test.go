@@ -41,3 +41,28 @@ func TestUpdateQuery2(t *testing.T) {
 		t.Errorf("Expected: %+v, found %+v", expected, found)
 	}
 }
+
+func TestUpdateQuery3(t *testing.T) {
+	var table struct {
+		TestField string `column:"test_field"`
+	}
+	table.TestField = "test"
+	found := UpdateMultiple([]string{"SimpleTable1", "SimpleTable2"}).SetAll(&table)
+
+	if errors.Cause(found.Error()) != InappropriateSetAllUsage {
+		t.Errorf("Expected error: %+v, found %+v", InappropriateSetAllUsage, found)
+	}
+}
+
+func TestUpdateQuery4(t *testing.T) {
+	expected := &UpdateQuery{
+		query:          "UPDATE `SimpleTable1`, `SimpleTable2` SET `SimpleTable2`.`field0` = ?",
+		setColumns:     []string{"field0"},
+		multipleTables: true,
+	}
+	found := UpdateMultiple([]string{"SimpleTable1", "SimpleTable2"}).Set([]string{"SimpleTable2.field0"})
+
+	if !reflect.DeepEqual(expected, found) {
+		t.Errorf("Expected: %+v, found %+v", expected, found)
+	}
+}

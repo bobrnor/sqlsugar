@@ -84,7 +84,8 @@ func (q *InsertQuery) Exec(tx *sql.Tx, i interface{}) (sql.Result, error) {
 		args = append(args, fieldValue.Interface())
 	}
 
-	result, err := database.Exec(q.query, args...)
+	ex := fetchExecutor(tx)
+	result, err := ex.Exec(q.query, args...)
 	if err != nil {
 		err = errors.WithStack(err)
 	}

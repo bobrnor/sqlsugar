@@ -5,22 +5,37 @@ import (
 	"fmt"
 	"reflect"
 
+	"strings"
+
 	"github.com/pkg/errors"
 )
 
 type UpdateQuery struct {
-	query      string
-	setColumns []string
-	err        error
+	query          string
+	setColumns     []string
+	multipleTables bool
+	err            error
 }
 
 var (
-	NoSet = errors.New("Set not set")
+	NoSet                    = fmt.Errorf("Set not set")
+	InappropriateSetAllUsage = fmt.Errorf("Inappropriate usage of SetAll method, can used only with single table queries")
 )
 
 func Update(table string) *UpdateQuery {
 	return &UpdateQuery{
 		query: fmt.Sprintf("UPDATE `%s`", table),
+	}
+}
+
+func UpdateMultiple(tables []string) *UpdateQuery {
+	quotedTables := []string{}
+	for _, table := range tables {
+		quotedTables = append(quotedTables, fmt.Sprintf("`%s`", table))
+	}
+	return &UpdateQuery{
+		query:          fmt.Sprintf("UPDATE %s", strings.Join(quotedTables, ", ")),
+		multipleTables: len(tables) > 1,
 	}
 }
 
@@ -34,22 +49,32 @@ func (q *UpdateQuery) Set(columns []string) *UpdateQuery {
 		return q
 	}
 
+	q.setColumns = []string{}
 	setsExpr := ""
 	for _, column := range columns {
 		if len(setsExpr) > 0 {
 			setsExpr += ", "
 		}
-
-		setsExpr += fmt.Sprintf("`%s` = ?", column)
+		if idx := strings.Index(column, "."); idx != -1 {
+			setsExpr += fmt.Sprintf("`%s`.`%s` = ?", column[:idx], column[idx+1:])
+			q.setColumns = append(q.setColumns, column[idx+1:])
+		} else {
+			setsExpr += fmt.Sprintf("`%s` = ?", column)
+			q.setColumns = append(q.setColumns, column)
+		}
 	}
 
-	q.setColumns = columns
 	q.query = fmt.Sprintf("%s SET %s", q.query, setsExpr)
 	return q
 }
 
 func (q *UpdateQuery) SetAll(i interface{}) *UpdateQuery {
 	if q.err != nil {
+		return q
+	}
+
+	if q.multipleTables {
+		q.err = errors.WithStack(InappropriateSetAllUsage)
 		return q
 	}
 
@@ -134,7 +159,8 @@ func (q *UpdateQuery) Exec(tx *sql.Tx, i interface{}, args ...interface{}) (sql.
 
 	sqlArgs := append(fields, args...)
 
-	result, err := database.Exec(q.query, sqlArgs...)
+	ex := fetchExecutor(tx)
+	result, err := ex.Exec(q.query, sqlArgs...)
 	if err != nil {
 		err = errors.WithStack(err)
 	}
