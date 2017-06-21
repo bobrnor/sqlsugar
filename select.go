@@ -186,11 +186,7 @@ func (q *SelectQuery) QueryRow(tx *sql.Tx, args ...interface{}) (interface{}, er
 
 	result, err := q.scan(row)
 	if err != nil {
-		if errors.Cause(err) != sql.ErrNoRows {
-			return nil, err
-		} else {
-			return nil, nil
-		}
+		return nil, err
 	}
 
 	return result.Addr().Interface(), nil
